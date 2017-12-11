@@ -3,19 +3,20 @@ using System.Threading.Tasks;
 using Isjr.Data.Enitites;
 using Isjr.Data.Security;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace Isjr.Data
 {
-    public class DbInitializer
+    public class DbInitializer : IDbInitializer
     {
-	    private readonly RoleManager<IdentityRole> _roleManager;
+	    private readonly RoleManager<IdentityRole<int>> _roleManager;
 	    private readonly ApplicationDbContext _context;
 	    private readonly IConfiguration _configuration;
 
 	    private static readonly string[] Roles = {"Admin", "Moderator"};
 
-		public DbInitializer(RoleManager<IdentityRole> roleManager, ApplicationDbContext context, IConfiguration config)
+		public DbInitializer(RoleManager<IdentityRole<int>> roleManager, ApplicationDbContext context, IConfiguration config)
 	    {
 		    _roleManager = roleManager;
 		    _context = context;
@@ -27,7 +28,7 @@ namespace Isjr.Data
 			var doesRoleExist = await _roleManager.RoleExistsAsync(roleName);
 		    if (!doesRoleExist)
 		    {
-			    var role = new IdentityRole { Name = roleName };
+			    var role = new IdentityRole<int> { Name = roleName };
 			    await _roleManager.CreateAsync(role);
 		    }
 		}
@@ -77,5 +78,10 @@ namespace Isjr.Data
 		    await CreateRoles();
 		    await CreateSuperUser();
 	    }
-    }
+
+	    public async Task Migrate()
+	    {
+		    await _context.Database.MigrateAsync();
+	    }
+	}
 }

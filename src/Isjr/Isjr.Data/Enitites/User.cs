@@ -1,11 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace Isjr.Data.Enitites
 {
-    public class User
-    {
-		public int Id { get; set; }
-
+    public class User : IdentityUser<int>
+	{
 		[Required]
 		public string Name { get; set; }
 
