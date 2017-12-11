@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Isjr.Data;
 using Isjr.Data.Enitites;
+using Isjr.Data.Repositories;
 using Isjr.Web.ErrorHandling;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -46,7 +47,9 @@ namespace Isjr.Web
 	        services.AddScoped<UserManager<User>>();
 
 	        services.AddScoped<IDbInitializer, DbInitializer>();
-		}
+	        services.AddScoped<IRepository<JojoReference>, JojoReferenceRepository>();
+			services.AddScoped<IRepository<MultimediaItem>, MultimediaItemRepository>();
+        }
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 		public async void Configure(IApplicationBuilder app, IHostingEnvironment env)
