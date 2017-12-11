@@ -14,6 +14,8 @@ namespace Isjr.Data.Enitites
 		[Required]
 		public string Text { get; set; }
 
+		public bool Accepted { get; set; }
+
 		public MultimediaItem Original { get; set; }
 
 		public MultimediaItem Reference { get; set; }
