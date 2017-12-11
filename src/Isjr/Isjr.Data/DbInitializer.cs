@@ -29,22 +29,17 @@ namespace Isjr.Data
 		    _multimediaTypeRepository = multimediaTypeRepository;
 	    }
 
-	    private async Task CreateRole(string roleName)
-	    {
-			var doesRoleExist = await _roleManager.RoleExistsAsync(roleName);
-		    if (!doesRoleExist)
-		    {
-			    var role = new IdentityRole<int> { Name = roleName };
-			    await _roleManager.CreateAsync(role);
-		    }
-		}
-
 	    private async Task CreateRoles()
 	    {
-		    foreach (var role in RoleNames)
+		    foreach (var roleName in RoleNames)
 		    {
-			     await CreateRole(role);
-		    }
+				var doesRoleExist = await _roleManager.RoleExistsAsync(roleName);
+			    if (!doesRoleExist)
+			    {
+				    var role = new IdentityRole<int> { Name = roleName };
+				    await _roleManager.CreateAsync(role);
+			    }
+			}
 		}
 
 	    private async Task CreateSuperUser()
