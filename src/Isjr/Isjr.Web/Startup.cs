@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
 using Isjr.Data;
 using Isjr.Data.Enitites;
+using Isjr.Web.ErrorHandling;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,9 +28,9 @@ namespace Isjr.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+	        services.AddMvc().AddMvcOptions(o => { o.Filters.Add(new GlobalExceptionFilter()); });
 
-	        var sqlConnectionString = Configuration.GetConnectionString("ApplicationDbContext");
+			var sqlConnectionString = Configuration.GetConnectionString("ApplicationDbContext");
 			services.AddDbContext<ApplicationDbContext>(options =>
 		        options.UseNpgsql(
 			        sqlConnectionString,
@@ -38,17 +38,18 @@ namespace Isjr.Web
 		        )
 	        );
 
-			services.AddScoped<IDbInitializer, DbInitializer>();
-
 	        services.AddIdentity<User, IdentityRole<int>>()
 				.AddEntityFrameworkStores<ApplicationDbContext>()
 		        .AddDefaultTokenProviders();
 
 			services.AddScoped<RoleManager<IdentityRole<int>>>();
+	        services.AddScoped<UserManager<User>>();
+
+	        services.AddScoped<IDbInitializer, DbInitializer>();
 		}
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public async void Configure(IApplicationBuilder app, IHostingEnvironment env)
+		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+		public async void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
             {

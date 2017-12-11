@@ -5,9 +5,6 @@ namespace Isjr.Data.Enitites
 {
     public class User : IdentityUser<int>
 	{
-		[Required]
-		public string Name { get; set; }
-
 	    [Required]
 		public string Hash { get; set; }
 

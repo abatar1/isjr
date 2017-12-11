@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Isjr.Data.Enitites;
 using Isjr.Data.Security;
 using Microsoft.AspNetCore.Identity;
@@ -11,16 +10,18 @@ namespace Isjr.Data
     public class DbInitializer : IDbInitializer
     {
 	    private readonly RoleManager<IdentityRole<int>> _roleManager;
-	    private readonly ApplicationDbContext _context;
 	    private readonly IConfiguration _configuration;
+	    private readonly UserManager<User> _userManager;
+	    private readonly ApplicationDbContext _dbContext;
 
 	    private static readonly string[] Roles = {"Admin", "Moderator"};
 
-		public DbInitializer(RoleManager<IdentityRole<int>> roleManager, ApplicationDbContext context, IConfiguration config)
+		public DbInitializer(RoleManager<IdentityRole<int>> roleManager, UserManager<User> userManager, IConfiguration config, ApplicationDbContext dbContext)
 	    {
 		    _roleManager = roleManager;
-		    _context = context;
-		    _configuration = config;
+		    _userManager = userManager;
+			_configuration = config;
+		    _dbContext = dbContext;
 	    }
 
 	    private async Task CreateRole(string roleName)
@@ -57,19 +58,24 @@ namespace Isjr.Data
 										   "dotnet user-secrets set SuperUserPassword <pw>");
 		    }
 
-			if (!_context.Users.Any(u => u.Name == userName))
+			if (await _userManager.FindByNameAsync(userName) == null)
 			{
 				var salt = Salt.Create();
 				var hash = Hash.Create(password, salt);
 
-				await _context.Users.AddAsync(new User
+				var superUser = new User
 				{
-					Name = userName,
+					UserName = userName,
 					Hash = hash,
 					Salt = salt
-				});
+				};
 
-				_context.SaveChanges();
+				var userResult = await _userManager.CreateAsync(superUser);
+
+				if (userResult.Succeeded)
+				{
+					await _userManager.AddToRoleAsync(superUser, "Admin");
+				}
 			}
 		}
 
@@ -81,7 +87,7 @@ namespace Isjr.Data
 
 	    public async Task Migrate()
 	    {
-		    await _context.Database.MigrateAsync();
+		    await _dbContext.Database.MigrateAsync();
 	    }
 	}
 }
