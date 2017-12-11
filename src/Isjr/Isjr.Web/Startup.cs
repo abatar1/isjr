@@ -49,6 +49,7 @@ namespace Isjr.Web
 	        services.AddScoped<IDbInitializer, DbInitializer>();
 	        services.AddScoped<IRepository<JojoReference>, JojoReferenceRepository>();
 			services.AddScoped<IRepository<MultimediaItem>, MultimediaItemRepository>();
+	        services.AddScoped<IMultimediaTypeRepository, MultimediaTypeRepository>();
         }
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

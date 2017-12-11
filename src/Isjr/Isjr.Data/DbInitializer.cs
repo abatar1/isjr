@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Isjr.Data.Enitites;
+using Isjr.Data.Repositories;
 using Isjr.Data.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -13,15 +15,18 @@ namespace Isjr.Data
 	    private readonly IConfiguration _configuration;
 	    private readonly UserManager<User> _userManager;
 	    private readonly ApplicationDbContext _dbContext;
+	    private readonly IMultimediaTypeRepository _multimediaTypeRepository;
 
-	    private static readonly string[] Roles = {"Admin", "Moderator"};
+	    private static readonly string[] RoleNames = {"Admin", "Moderator"};
+	    private static readonly string[] MultimediaTypeNames = {"Image"};
 
-		public DbInitializer(RoleManager<IdentityRole<int>> roleManager, UserManager<User> userManager, IConfiguration config, ApplicationDbContext dbContext)
+		public DbInitializer(RoleManager<IdentityRole<int>> roleManager, UserManager<User> userManager, IConfiguration config, ApplicationDbContext dbContext, IMultimediaTypeRepository multimediaTypeRepository)
 	    {
 		    _roleManager = roleManager;
 		    _userManager = userManager;
 			_configuration = config;
 		    _dbContext = dbContext;
+		    _multimediaTypeRepository = multimediaTypeRepository;
 	    }
 
 	    private async Task CreateRole(string roleName)
@@ -36,7 +41,7 @@ namespace Isjr.Data
 
 	    private async Task CreateRoles()
 	    {
-		    foreach (var role in Roles)
+		    foreach (var role in RoleNames)
 		    {
 			     await CreateRole(role);
 		    }
@@ -79,10 +84,26 @@ namespace Isjr.Data
 			}
 		}
 
+	    private async Task CreateMultimediaTypes()
+	    {
+		    var existingTypes = _multimediaTypeRepository.ListAll().ToList();
+
+			foreach (var mediaType in MultimediaTypeNames)
+		    {
+			    if (existingTypes.All(x => x.Name != mediaType))
+			    {
+				    await _multimediaTypeRepository.Add(new MultimediaType {Name = mediaType});
+			    }
+		    }
+
+		    await _multimediaTypeRepository.Save();
+	    }
+
 	    public async Task Seed()
 	    {
 		    await CreateRoles();
 		    await CreateSuperUser();
+		    await CreateMultimediaTypes();
 	    }
 
 	    public async Task Migrate()
